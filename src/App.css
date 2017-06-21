@@ -1,0 +1,106 @@
+* {
+    -webkit-backface-visibility: hidden;
+}
+.error {
+    color: #CD2200;
+}
+.crvena {
+    background: -webkit-radial-gradient(center, ellipse cover, #ff3019 0%, #cf0404 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.zelena {
+    background: -webkit-radial-gradient(center, ellipse cover, #b4ddb4 0%, #83c783 17%, #52b152 33%, #008a00 67%, #005700 83%, #002400 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.plava {
+    background: -webkit-radial-gradient(center, ellipse cover, #499bea 0%, #082742 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.ljubicasta {
+    background: -webkit-radial-gradient(center, ellipse cover, #e570e7 0%, #c85ec7 47%, #a849a3 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.braon {
+    background: -webkit-radial-gradient(center, ellipse cover, #ed9017 0%, #a52a2a 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.zuta {
+    background: -webkit-radial-gradient(center, ellipse cover, #ffe600 0%, #ffe000 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.narandzasta {
+    background: -webkit-radial-gradient(center, ellipse cover, #ff9800 0%, #ff7b0d 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.crna {
+    background: -webkit-radial-gradient(center, ellipse cover, #191919 0%, #000000 100%);
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.kom-ball {
+    background-color: #2eb82e;
+    color: #FFF;
+    font-weight: bold;
+    font-size: 20px;
+}
+.rez-ball {
+    color: #fff;
+    font-weight: bold;
+    font-size: 55px;
+    background-color: #006699;
+    width: 100px!important;
+    height: 100px!important;
+}
+.ball {
+    box-shadow: 2px 2px 5px 0px #333;
+    border-radius: 100%;
+    margin-left: 10px;
+    width: 50px;
+    height: 50px;
+    padding: 11px;
+    margin-bottom: 6px;
+}
+.ballInside {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #FFF;
+    color: #000;
+    border-radius: 50%;
+    text-align: center;
+    margin-left: -15px;
+    margin-top: 0px;
+}
+body {
+    background-color: #F5F5F5;
+    margin-top: 20px!important;
+}
+.match {
+    display: inline-block;
+    background-color: #CD2200;
+    font-weight: bold;
+    color: #FFF;
+    padding-left: 2px;
+    padding-right: 2px;
+    border-left: 1px solid #FFF;
+    border-right: 1px solid #FFF;
+}
+.custom-padding {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
