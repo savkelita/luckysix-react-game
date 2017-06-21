@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-//import logo from './logo.svg';
 import './App.css';
 import './Animate.css'
-//import data from './data.js';
 
 class App extends Component {
   constructor() {
