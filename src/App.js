@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import playernames from './names.js'
 import './App.css';
 import './Animate.css'
 
@@ -15,25 +16,34 @@ class App extends Component {
       dobitnici: []
     };
 
-    //this.loadData = this.loadData.bind(this);
     this.addNumber = this.addNumber.bind(this);
     this.randomTicket = this.randomTicket.bind(this);
     this.newGame = this.newGame.bind(this);
-    //this.calculate = this.calculate.bind(this);
   }
 
   newGame() {
-    if (this.state.loptice.length === 34) { // 7
+    if (this.state.loptice.length === 34) {
       this.setState({
         novi: [],
         isPlaying: true
       })
     }
     else {
+
+      // Skini kredite za 100 posto je to ulog
+      // ovde bi trebalo da se napravi kopija novi
+      // pa da se nad njom skine kredit 
+      // pa se nakon toga radi setState()
+
+      this.state.novi.map(function(x){
+        x.ballance -= 100;
+      })
+
       this.setState({
         loptice: [],
         isPlaying: true
       })
+
     }
     this.timerID = setInterval(() => this.izvlacenje(), 1000)
   }
@@ -42,7 +52,7 @@ class App extends Component {
     let random = [];
     let joined = [];
 
-    if (this.state.loptice.length > 34) { // 7
+    if (this.state.loptice.length > 34) {
       this.krajIgre()
     }
     else {
@@ -58,9 +68,10 @@ class App extends Component {
     }
   }
 
-  checkTicket(num) { // primi random izvucenu kuglicu.
+  checkTicket(num) {
     const mapped = this.state.mapirane;
     let arr = [];
+    let join = [];
 
     for (let n in mapped) {
 
@@ -71,11 +82,23 @@ class App extends Component {
         // Proveri dobitne
         if (mapped[n].numbers.length === 0) {
 
-          console.log(
-            "TIKET ID: " + "#" + mapped[n].id + "\n" +
-            "DOBITNIK: " + mapped[n].name + "\n" +
-            "POGODAK NA: " + "#" + this.state.loptice.length + " izvucenom broju" + "\n" +
-            "DOBITAK: " + 100 * this.state.loptice.length + "RSD" );
+          let kvota = Math.floor(Math.random() * (10 - 1) + 1)
+
+          let obj = {
+            id: mapped[n].id,
+            dobitnik: mapped[n].name,
+            rbr: this.state.loptice.lenght,
+            dobitak: kvota * mapped[n].ballance
+          }
+
+          arr.push(obj)
+
+          join = this.state.dobitnici.concat(arr);
+
+          this.setState({
+            dobitnici: join
+          })
+
         }
       }
     }
@@ -89,11 +112,31 @@ class App extends Component {
   }
 
   krajIgre() {
+
     clearInterval(this.timerID);
 
     this.setState({
       isPlaying: false
     })
+
+    // filtriraj
+    let filtered = this.setBallance(this.state.dobitnici, this.state.novi)
+
+    this.setState({
+      novi: [].concat(filtered)
+    })
+
+  }
+
+  setBallance(dobitni, tiketi){
+    for(var d in dobitni){
+        for(var t in tiketi){
+           if(dobitni[d].id === tiketi[t].id){
+               tiketi[t].ballance += dobitni[d].dobitak
+           }
+        }
+    }
+    return tiketi
   }
 
   // Ticket constructor
@@ -101,18 +144,16 @@ class App extends Component {
 
     let random = Math.floor(Math.random() * (999999 - 1)) + 1;
     this.id = random;
-    this.name = name || makeName();
-    this.isActive = true;
+    this.name = name || getName();
+    this.ballance = 100;
     this.numbers = numbers || getRandom();
 
     // Player name
-    function makeName() {
-      let text = "";
-      let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      for (let i = 0; i < 5; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-      }
-      return text;
+    function getName() {
+      const names = playernames; 
+      let random = Math.floor(Math.random() * names.length)
+      let name = names[random];
+      return name;
     }
 
     // Random numbers 
@@ -121,7 +162,7 @@ class App extends Component {
       let joined = [];
 
       while (joined.length < 6) {
-        random = Math.floor(Math.random() * (38 - 1)) + 1;
+        random = Math.floor(Math.random() * (48 - 1)) + 1;
         if (joined.indexOf(random) === -1) {
           joined.push(random);
         }
@@ -136,7 +177,7 @@ class App extends Component {
     let arr = [];
     let join = [];
     let obj = {};
-    let maped = [];
+    let mapped = [];
 
     obj = new this.Ticket();
     arr.push(obj);
@@ -147,11 +188,11 @@ class App extends Component {
     })
 
     join = this.state.novi.concat(arr);
-    maped = this.state.mapirane.concat(test);
+    mapped = this.state.mapirane.concat(test);
 
     this.setState({
       novi: join,
-      mapirane: maped
+      mapirane: mapped
     })
   }
 
@@ -190,18 +231,19 @@ class App extends Component {
   }
 
   render() {
+
     const loptice = this.state.loptice;
-    // const dobitnici = this.state.dobitnici;
+    const dobitnici = this.state.dobitnici;
 
     function getColor(ball) {
-      let crvene = [1, 9, 17, 25, 33, 41];
-      let zelene = [2, 10, 18, 26, 34, 42];
-      let plave = [3, 11, 19, 27, 35, 43];
-      let ljubicaste = [4, 12, 20, 28, 36, 44];
-      let braon = [5, 13, 21, 29, 37, 45];
-      let zuta = [6, 14, 22, 30, 38, 46];
-      let narandzaste = [7, 15, 23, 31, 39, 47];
-      let crne = [8, 16, 24, 32, 40, 48];
+      const crvene = [1, 9, 17, 25, 33, 41];
+      const zelene = [2, 10, 18, 26, 34, 42];
+      const plave = [3, 11, 19, 27, 35, 43];
+      const ljubicaste = [4, 12, 20, 28, 36, 44];
+      const braon = [5, 13, 21, 29, 37, 45];
+      const zuta = [6, 14, 22, 30, 38, 46];
+      const narandzaste = [7, 15, 23, 31, 39, 47];
+      //const crne = [8, 16, 24, 32, 40, 48];
 
       if (crvene.indexOf(ball) !== -1) {
         return "crvena"
@@ -236,12 +278,19 @@ class App extends Component {
       </li>
     })
 
-    // var listdobitnika = dobitnici.map(function(w, index){
-    //   return <li key={index}>{w}</li>
-    // })
+    var listadobitnika = dobitnici.map(function(w, index){
+      return (
+      <li key={index} className="list-group-item animated bounceInLeft">
+       <b>ID: </b>#{w.id} <b>IME:</b> {w.dobitnik} <b>DOBITAK:</b> {w.dobitak} 
+      </li>
+      );
+    })
 
     return (
       <div className="container">
+        <ul className="list-group">
+          {listadobitnika}
+        </ul>
         <div className="row">
           <div className="col-md-5">
             <div className="panel panel-default">
@@ -314,7 +363,7 @@ class Ticketpane extends Component {
           <tr>
             <th>#ID</th>
             <th>Player</th>
-            <th>Status</th>
+            <th>Ballance</th>
             <th>Numbers</th>
           </tr>
         </thead>
@@ -328,7 +377,7 @@ class Ticketpane extends Component {
 
 class Ticketitem extends Component {
   render() {
-    const active = this.props.details.isActive;
+    // const active = this.props.details.isActive;
     const numbers = this.props.details.numbers;
     const loptice = this.props.loptice;
 
@@ -346,11 +395,7 @@ class Ticketitem extends Component {
       <tr>
         <td>{this.props.details.id}</td>
         <td>{this.props.details.name}</td>
-        <td>
-          <span className={active ? 'label label-success' : 'label label-danger'}>
-            {active ? 'Aktivan' : 'Neaktivan'}
-          </span>
-        </td>
+        <td><b>{this.props.details.ballance.toFixed(2)}</b> <small>RSD</small></td>
         <td>{numbers.map(function (x, index) {
           return <span key={index} className={addClass(x)}>&nbsp;{x}&nbsp;</span>
         })}</td>
