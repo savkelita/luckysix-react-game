@@ -57,7 +57,7 @@ class App extends Component {
 
     // Create ticket
     makeTicket() {
-        let ticket = {} //
+        let ticket = {}
         let listOfTickets = []
 
         // Make ticket object.
