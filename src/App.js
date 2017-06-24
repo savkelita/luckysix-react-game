@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
-import playernames from './names.js'
+import { getColor } from './colors.js';
+import { getRandom } from './helper.js';
+import playernames from './names.js';
 import './App.css';
-import './Animate.css'
+import './Animate.css';
 
 class App extends Component {
     constructor() {
@@ -51,13 +53,6 @@ class App extends Component {
             }
             return joined.sort((a, b) => a - b);
         }
-
-        // Helper function, get random number between 1 & 48
-        function getRandom(){
-            const min = 1
-            const max = 48
-            return Math.floor(Math.random() * (max - min)) + min;
-        }
     }
 
     // Create ticket
@@ -106,12 +101,39 @@ class App extends Component {
 
     // Drawing
     drawing(){
-                                /* TASK */
-          // ################################################# //
-         // Read elements one by one from combinations array  //
-        // ################################################# //
         const combinations = this.getRandomCombination();
-        console.log(combinations);
+        const draw = this.state.draw;
+        const timeout = 400;
+        let that = this;
+        let join = [];
+        let joined = [];
+
+        // Recursive function - Reading drawed combinations
+        (function interator(counter){
+            if(counter < combinations.length - 1){
+                setTimeout(() => {
+                counter++
+                join.push(combinations[counter])
+                joined = draw.concat(join)
+                that.setState({
+                    draw: joined
+                })
+                interator(counter) // Recursion call
+                }, timeout)
+            }
+            else {
+                // Draw end
+                that.gameIsOver()
+            }
+        })(-1) // IIFE
+    }
+
+    // Game is over
+    gameIsOver(){
+        console.log("Game is over!")
+        this.setState({
+            isPlaying: false
+        })
     }
 
     // Generate combinations
@@ -120,25 +142,24 @@ class App extends Component {
         let joined = [];
 
         while (joined.length < 35) {
-            random = this.getRandom()
+            random = getRandom()
             if (joined.indexOf(random) === -1) {
                 joined.push(random);
             }
             else {
-                random = this.getRandom()
+                random = getRandom()
             }
         }
         return joined
     }
 
-    // Get random number - Helper
-    getRandom(){
-        const min = 1
-        const max = 48
-        return Math.floor(Math.random() * (max - min)) + min;
-    }
-
     render() {
+        const draw = this.state.draw;
+        let drawed = draw.map((number, index) =>
+            <li className={"ball animated flip " + getColor(number)} key={index}>
+                <span className="ballInside">{number}</span>
+            </li>
+        )
         return (
             <div className="container">
                 <div className="row">
@@ -161,10 +182,10 @@ class App extends Component {
                             <div className="panel-heading">
                                 Drawing
                             </div>
-                            <div className="panel-body">
-                                <pre>
-                                    {this.state.draw}
-                                </pre>
+                            <div className="panel-body custom-padding text-center">
+                                <ul className="list-inline">
+                                    {drawed}
+                                </ul>
                                 <button onClick={this.newGame} className="btn btn-default btn-block">Play</button>
                             </div>
                         </div>
