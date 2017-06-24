@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
+import {getRandom, addClass} from './helper.js'
 import { getColor } from './colors.js';
-import { getRandom } from './helper.js';
 import playernames from './names.js';
 import './App.css';
 import './Animate.css';
@@ -78,9 +78,8 @@ class App extends Component {
 
     // Let's play game
     newGame() {
-        const draw = this.state.draw;
         // If game allready finish
-        if(draw.length === 34) {
+        if(this.state.draw.length === 35) {
             // Set state to default
             this.setState({
                 tickets: [],
@@ -103,7 +102,7 @@ class App extends Component {
     drawing(){
         const combinations = this.getRandomCombination();
         const draw = this.state.draw;
-        const timeout = 400;
+        const timeout = 500;
         let that = this;
         let join = [];
         let joined = [];
@@ -155,10 +154,25 @@ class App extends Component {
 
     render() {
         const draw = this.state.draw;
+        const tickets = this.state.tickets;
+
         let drawed = draw.map((number, index) =>
             <li className={"ball animated flip " + getColor(number)} key={index}>
                 <span className="ballInside">{number}</span>
             </li>
+        )
+
+        let players = tickets.map((player, index) => 
+            <tr key={index}>
+                <td>{player.id}</td>
+                <td>{player.name}</td>
+                <td><b>{player.credit}</b> <small>RSD</small></td>
+                <td>
+                {player.numbers.map(function(item, index){
+                    return <span key={index} className={addClass(draw, item)}>&nbsp;{item}&nbsp;</span>
+                })}
+                </td>
+            </tr>
         )
         return (
             <div className="container">
@@ -169,10 +183,21 @@ class App extends Component {
                                 List of tickets
                             </div>
                             <div className="panel-body">
+                            <table className="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Player</th>
+                                    <th>Credit</th>
+                                    <th>Numbers</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    {players}
+                                </tbody>
+                            </table>
                             <button disabled={this.state.isPlaying} onClick={this.makeTicket} className="btn btn-default btn-block">Random Ticket</button>
-                                <pre>
-                                    {JSON.stringify(this.state.tickets, null, 2)}
-                                </pre>
+
                             </div>
                         </div>
                     </div>
