@@ -18,14 +18,13 @@ module.exports = {
 
         if (snumber <= 6) { snumber = 0 }
         else { snumber = snumber - 6 }
-
         return odds[snumber];
     },
     setCredit: function (winners, tickets) {
         for (var d in winners) {
             for (var t in tickets) {
                 if (winners[d].id === tickets[t].id) {
-                    tickets[t].credit += winners[d].price
+                    tickets[t].credit += winners[d].prize
                 }
             }
         }
@@ -33,7 +32,6 @@ module.exports = {
     },
     makeCopy: function(array){
         let copy = array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
-
         return copy
     }
 

@@ -93,7 +93,7 @@ class App extends Component {
 
             // First game, just set isPlaying to true.
             this.setState({
-                // tickets: [].concat(test),
+                // tickets: [].concat(test)
                 isPlaying: true
             })
         }
@@ -149,20 +149,21 @@ class App extends Component {
                 // Check for a winner 
                 if (copytickets[ticket].numbers.length === 0) {
 
-                    // get odds to calculate price
+                    // get odds to calculate prize
                     let odds = getOdds(snumber);
 
                     // Create object winner
                     winner = {
                         id: copytickets[ticket].id,
                         name: copytickets[ticket].name,
-                        price: odds * copytickets[ticket].credit
+                        prize: odds * copytickets[ticket].credit
                     }
                     join.push(winner)
                     joined = this.state.winners.concat(join);
                     this.setState({
                         winners: joined
                     })
+                    join = []
                 }
             }
         }
@@ -214,7 +215,7 @@ class App extends Component {
         let winner = winners.map((item, index) =>
             <li key={index} className="list-group-item animated fadeInUp">
                 <i className="fa fa-trophy fa-2x"></i>
-                <b><br />Name:</b> {item.name} <b><br />Price:</b> {item.price}
+                <b><br />Name:</b> {item.name} <b><br />Prize:</b> {item.prize}
             </li>
         )
 
@@ -222,7 +223,7 @@ class App extends Component {
             <tr key={index}>
                 <td>{player.id}</td>
                 <td>{player.name}</td>
-                <td><b>{player.credit.toFixed(2)}</b> <small>RSD</small></td>
+                <td><b>{player.credit.toFixed(2)}</b> <small>$</small></td>
                 <td>
                     {player.numbers.map(function (item, index) {
                         return <span key={index} className={addClass(draw, item)}>&nbsp;{item}&nbsp;</span>
@@ -265,7 +266,7 @@ class App extends Component {
                                 <div className={this.state.isPlaying ? 'animated flipInX' : 'hidden'}>
                                     <h1 className="text-center"># {this.state.draw.length}</h1>
                                     <h2 className="text-center">ODDS</h2>
-                                    <h3 className="text-center">{getOdds(this.state.draw.length)}</h3>
+                                    <h3 className="text-center animated tada infinite">x {getOdds(this.state.draw.length)}</h3>
                                 </div>
                                 <button disabled={this.state.isPlaying} onClick={this.newGame} className="btn btn-success btn-block">Star game</button>
                             </div>
