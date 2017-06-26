@@ -39,10 +39,11 @@ npm start
 
 8). src/App.js is the entry point of app.
 
-*Note*
+**NOTE:**
+
 This is my first Reactjs project and i'm completely new in this language.
 Your advice or suggestions will be much appreciated and welcomed.
 
 
-Made with @octocat :heartbeat:
+Made with :heartbeat:
 
