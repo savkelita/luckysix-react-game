@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {getRandom, addClass} from './helper.js'
+import { getRandom, addClass } from './helper.js'
 import { getColor } from './colors.js';
 import playernames from './names.js';
 import './App.css';
@@ -79,11 +79,9 @@ class App extends Component {
     // Let's play game
     newGame() {
         // If game allready finish
-        if(this.state.draw.length === 35) {
+        if (this.state.draw.length === 35) {
             // Set state to default
             this.setState({
-                tickets: [],
-                ticketscopy: [],
                 draw: [],
                 isPlaying: true
             })
@@ -99,25 +97,25 @@ class App extends Component {
     }
 
     // Drawing
-    drawing(){
-        const combinations = this.getRandomCombination();
-        const draw = this.state.draw;
-        const timeout = 1000;
-        let join = [];
+    drawing() {
+        let combinations = this.getRandomCombination();
         let joined = [];
-        let iterator;
+        let join = [];
+        let start;
+        const timeout = 1000;
 
         // Recursive function - Reading drawed combinations
-        (iterator = (counter) => {
-            if(counter < combinations.length - 1){
-               this.timerID = setTimeout(() => {
-                    counter ++
-                    join.push(combinations[counter]);
-                    joined = draw.concat(join)
+        (start = (counter) => {
+            if (counter < combinations.length - 1) {
+                this.timerID = setTimeout(() => {
+                    counter++
+                    join.push(combinations[counter])
+                    joined = this.state.draw.concat(join)
                     this.setState({
                         draw: joined
                     })
-                    iterator(counter) // Recursion call
+                    join = [] // Reset join
+                    start(counter) // Recursion call
                 }, timeout)
             }
             else {
@@ -125,15 +123,17 @@ class App extends Component {
                 this.gameIsOver()
             }
         })(-1); // IIFE
-        
+
     }
 
     // Game is over
-    gameIsOver(){
+    gameIsOver() {
         console.log("Game is over!")
         this.setState({
             isPlaying: false
         })
+
+        // TODO: Next event.
     }
 
     // Generate combinations
@@ -163,15 +163,15 @@ class App extends Component {
             </li>
         )
 
-        let players = tickets.map((player, index) => 
+        let players = tickets.map((player, index) =>
             <tr key={index}>
                 <td>{player.id}</td>
                 <td>{player.name}</td>
                 <td><b>{player.credit}</b> <small>RSD</small></td>
                 <td>
-                {player.numbers.map(function(item, index){
-                    return <span key={index} className={addClass(draw, item)}>&nbsp;{item}&nbsp;</span>
-                })}
+                    {player.numbers.map(function (item, index) {
+                        return <span key={index} className={addClass(draw, item)}>&nbsp;{item}&nbsp;</span>
+                    })}
                 </td>
             </tr>
         )
@@ -184,20 +184,20 @@ class App extends Component {
                                 List of tickets
                             </div>
                             <div className="panel-body">
-                            <table className="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th>#ID</th>
-                                    <th>Player</th>
-                                    <th>Credit</th>
-                                    <th>Numbers</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    {players}
-                                </tbody>
-                            </table>
-                            <button disabled={this.state.isPlaying} onClick={this.makeTicket} className="btn btn-default btn-block">Random Ticket</button>
+                                <table className="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#ID</th>
+                                            <th>Player</th>
+                                            <th>Credit</th>
+                                            <th>Numbers</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {players}
+                                    </tbody>
+                                </table>
+                                <button disabled={this.state.isPlaying} onClick={this.makeTicket} className="btn btn-default btn-block">Random Ticket</button>
 
                             </div>
                         </div>
