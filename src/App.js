@@ -102,29 +102,30 @@ class App extends Component {
     drawing(){
         const combinations = this.getRandomCombination();
         const draw = this.state.draw;
-        const timeout = 500;
-        let that = this;
+        const timeout = 1000;
         let join = [];
         let joined = [];
+        let iterator;
 
         // Recursive function - Reading drawed combinations
-        (function interator(counter){
+        (iterator = (counter) => {
             if(counter < combinations.length - 1){
-                setTimeout(() => {
-                counter++
-                join.push(combinations[counter])
-                joined = draw.concat(join)
-                that.setState({
-                    draw: joined
-                })
-                interator(counter) // Recursion call
+               this.timerID = setTimeout(() => {
+                    counter ++
+                    join.push(combinations[counter]);
+                    joined = draw.concat(join)
+                    this.setState({
+                        draw: joined
+                    })
+                    iterator(counter) // Recursion call
                 }, timeout)
             }
             else {
-                // Draw end
-                that.gameIsOver()
+                clearTimeout(this.timerID)
+                this.gameIsOver()
             }
-        })(-1) // IIFE
+        })(-1); // IIFE
+        
     }
 
     // Game is over
