@@ -263,6 +263,7 @@ class App extends Component {
                                     <h2 className="text-center">ODDS</h2>
                                     <h3 className="text-center">{getOdds(this.state.draw.length)}</h3>
                                 </div>
+                                <button disabled={this.state.isPlaying} onClick={this.newGame} className="btn btn-success btn-block">Star game</button>
                             </div>
                         </div>
                         <ul className="list-group text-center">
@@ -278,7 +279,6 @@ class App extends Component {
                                 <ul className="list-inline">
                                     {drawed}
                                 </ul>
-                                <button onClick={this.newGame} className="btn btn-default btn-block">Play</button>
                             </div>
                         </div>
                     </div>
