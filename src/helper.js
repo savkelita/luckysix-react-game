@@ -21,7 +21,6 @@ module.exports = {
 
         return odds[snumber];
     },
-
     setCredit: function (winners, tickets) {
         for (var d in winners) {
             for (var t in tickets) {
@@ -31,6 +30,11 @@ module.exports = {
             }
         }
         return tickets
+    },
+    makeCopy: function(array){
+        let copy = array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
+
+        return copy
     }
 
 }

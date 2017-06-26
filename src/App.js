@@ -88,8 +88,12 @@ class App extends Component {
             })
         }
         else {
+            // TODO: Credit logic.
+            this.state.tickets.map((item) => item.credit -= 100);
+
             // First game, just set isPlaying to true.
             this.setState({
+                // tickets: [].concat(test),
                 isPlaying: true
             })
         }
