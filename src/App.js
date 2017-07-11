@@ -65,7 +65,7 @@ class App extends Component {
         const tickets = this.state.tickets;
         let ticketscopy = makeCopy(tickets);
 
-        ticketscopy = ticketscopy.map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }))
+        ticketscopy = ticketscopy.filter((ticket => ticket.credit !== 0)).map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
 
         // Set new state.
         this.setState({
