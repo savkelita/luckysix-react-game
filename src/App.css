@@ -4,6 +4,12 @@
 .error {
     color: #CD2200;
 }
+
+.mark {
+    background-color: #8BC34A;
+    transition: all 0.5s;
+}
+
 .crvena {
     background: -webkit-radial-gradient(center, ellipse cover, #ff3019 0%, #cf0404 100%);
     color: #FFF;
@@ -97,8 +103,17 @@ body {
     color: #FFF;
     padding-left: 2px;
     padding-right: 2px;
-    border-left: 1px solid #FFF;
-    border-right: 1px solid #FFF;
+    border: 1px solid #333;
+    /*border-left: 1px solid #FFF;
+    border-right: 1px solid #FFF;*/
+}
+
+.default {
+    display: inline-block;
+    font-weight: bold;
+    padding-left: 2px;
+    padding-right: 2px;
+    border: 1px solid #ccc;
 }
 .custom-padding {
     margin-top: 40px;

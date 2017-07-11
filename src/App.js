@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
-import { getRandom, addClass, getOdds, setCredit } from './helper.js'
-import { getColor } from './colors.js';
+import { addClass, getRandomCombination, makeCopy } from './helper.js';
+import odds from './odds.js';
+import color from './colors.js';
 import playernames from './names.js';
 import './App.css';
 import './Animate.css';
@@ -11,9 +12,7 @@ class App extends Component {
 
         this.state = {
             tickets: [],
-            ticketscopy: [],
             draw: [],
-            winners: [],
             isPlaying: false
         };
 
@@ -23,36 +22,22 @@ class App extends Component {
     }
 
     // Ticket constructor 
-    Ticket(name, credit, numbers) {
-
-        let randomid = Math.floor(Math.random() * (999999 - 1)) + 1
+    Ticket(name, credit, bet, numbers) {
+        const numberslength = 6;
+        let randomid = Math.floor(Math.random() * (9999 - 1)) + 1
         this.id = randomid
         this.name = name || getName()
-        this.credit = credit || 100
-        this.numbers = numbers || getRandomCombination()
+        this.credit = credit || 1000
+        this.numbers = numbers || getRandomCombination(numberslength)
+        this.match = 0 // Broj pogodaka
+        this.bet = bet || 100
+        this.prize = 0
 
         // Get random Player Name from names.js
         function getName() {
             let random = Math.floor(Math.random() * playernames.length)
             let name = playernames[random];
             return name;
-        }
-
-        // Get random combination
-        function getRandomCombination() {
-            let random = 0;
-            let joined = [];
-
-            while (joined.length < 6) {
-                random = getRandom()
-                if (joined.indexOf(random) === -1) {
-                    joined.push(random);
-                }
-                else {
-                    random = getRandom()
-                }
-            }
-            return joined.sort((a, b) => a - b);
         }
     }
 
@@ -67,47 +52,39 @@ class App extends Component {
         // Push ticket to array.
         listOfTickets.push(ticket)
 
-        // Make a copy of tickets list
-        let copyOfTicketsList = listOfTickets.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
-
         // Set tickets to state.
         this.setState({
-            tickets: this.state.tickets.concat(listOfTickets),
-            ticketscopy: this.state.ticketscopy.concat(copyOfTicketsList)
+            draw: [],
+            tickets: this.state.tickets.concat(listOfTickets)
         })
     }
 
     // Let's play game
     newGame() {
-        // If game allready finish
-        if (this.state.draw.length === 35) {
-            // Set state to default
-            this.setState({
-                draw: [],
-                isPlaying: true
-            })
-        }
-        else {
-            // TODO: Credit logic.
-            this.state.tickets.map((item) => item.credit -= 100);
+        const tickets = this.state.tickets;
+        let ticketscopy = makeCopy(tickets);
 
-            // First game, just set isPlaying to true.
-            this.setState({
-                // tickets: [].concat(test)
-                isPlaying: true
-            })
-        }
+        ticketscopy = ticketscopy.map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }))
+
+        // Set new state.
+        this.setState({
+            draw: [],
+            tickets: [].concat(ticketscopy),
+            isPlaying: true
+        })
+
         // Game is LIVE! Go to Drawing
         this.drawing()
     }
 
     // Drawing
     drawing() {
-        let combinations = this.getRandomCombination();
+        const combinationslength = 35;
+        let combinations = getRandomCombination(combinationslength);
         let joined = [];
         let join = [];
         let start;
-        const timeout = 1500;
+        const timeout = 1000;
 
         // Recursive function - Reading drawed combinations
         (start = (counter) => {
@@ -120,7 +97,7 @@ class App extends Component {
                         draw: joined
                     })
 
-                    this.checkTicket(combinations[counter])
+                    this.matching(combinations[counter]);
 
                     join = [] // Reset join
                     start(counter) // Recursion call
@@ -134,102 +111,71 @@ class App extends Component {
 
     }
 
-    // Looking for a winners
-    checkTicket(number) {
-        const copytickets = this.state.ticketscopy;
-        let snumber = this.state.draw.length;
-        let joined = [];
-        let join = [];
-        let winner = {};
+    // Looking for winners - Set prize, matched values etc.
+    matching(number) {
+        const draws = this.state.draw;
+        const tickets = this.state.tickets;
+        let coef = odds[draws.length]; // Take odds.
+        let ticketscopy = makeCopy(tickets); // Make a copy of all tickets.
 
-        for (let ticket in copytickets) {
-            let index = copytickets[ticket].numbers.indexOf(number);
-            if (index > -1) {
-                copytickets[ticket].numbers.splice(index, 1);
-                // Check for a winner 
-                if (copytickets[ticket].numbers.length === 0) {
-
-                    // get odds to calculate prize
-                    let odds = getOdds(snumber);
-
-                    // Create object winner
-                    winner = {
-                        id: copytickets[ticket].id,
-                        name: copytickets[ticket].name,
-                        prize: odds * copytickets[ticket].credit
-                    }
-                    join.push(winner)
-                    joined = this.state.winners.concat(join);
-                    this.setState({
-                        winners: joined
-                    })
-                    join = []
+        ticketscopy.forEach((ticket) => {
+            if (ticket.numbers.indexOf(number) !== -1) {
+                Object.assign({}, ticket, { match: ticket.match += 1 })
+                if (ticket.match === 6) {
+                    Object.assign({}, ticket, { credit: ticket.credit += ticket.bet * coef, prize: ticket.prize = ticket.bet * coef })
                 }
             }
-        }
+        })
+
+        this.setState({
+            tickets: [].concat(ticketscopy)
+        })
+
     }
 
     // Game is over
     gameIsOver() {
-        const winners = this.state.winners;
-        const tickets = this.state.tickets;
         this.setState({
             isPlaying: false
         })
-
-        // Increment credits if we have winner
-        let calculate = setCredit(winners, tickets)
-        this.setState({
-            tickets: [].concat(calculate)
-        })
     }
 
-    // Generate combinations
-    getRandomCombination() {
-        let random = 0;
-        let joined = [];
+    // Real-time winner checker
+    lookingForWinners() {
+        const tickets = this.state.tickets;
+        const draws = this.state.draw;
 
-        while (joined.length < 35) {
-            random = getRandom()
-            if (joined.indexOf(random) === -1) {
-                joined.push(random);
-            }
-            else {
-                random = getRandom()
-            }
-        }
-        return joined
+        return tickets.filter(ticket => ticket.numbers.every(number => draws.some(draw => draw === number)))
     }
 
     render() {
         const draw = this.state.draw;
         const tickets = this.state.tickets;
-        const winners = this.state.winners;
 
         let drawed = draw.map((number, index) =>
-            <li className={"ball animated flip " + getColor(number)} key={index}>
+            <li className={"ball animated flip " + color[number]} key={index}>
                 <span className="ballInside">{number}</span>
             </li>
         )
 
-        let winner = winners.map((item, index) =>
-            <li key={index} className="list-group-item animated fadeInUp">
-                <i className="fa fa-trophy fa-2x"></i>
-                <b><br />Name:</b> {item.name} <b><br />Prize:</b> {item.prize}
-            </li>
-        )
-
         let players = tickets.map((player, index) =>
-            <tr key={index}>
-                <td>{player.id}</td>
+            <tr className={player.match === 6 ? 'mark animated tada' : 'animated fadeInUp'} key={index}>
                 <td>{player.name}</td>
-                <td><b>{player.credit.toFixed(2)}</b> <small>$</small></td>
+                <td><b>{player.credit.toFixed(2)}</b></td>
                 <td>
-                    {player.numbers.map(function (item, index) {
-                        return <span key={index} className={addClass(draw, item)}>&nbsp;{item}&nbsp;</span>
+                    {player.numbers.map((number, index) => {
+                        return <span key={index} className={addClass(draw, number)}>&nbsp;{number}&nbsp;</span>
                     })}
                 </td>
+                <td>{player.bet.toFixed(2)}</td>
             </tr>
+        )
+
+        let winners = this.lookingForWinners().map((ticket, index) =>
+            <li key={index} className="list-group-item animated fadeInUp">
+                <i className="fa fa-trophy fa-2x"></i>
+                <b><br />Name:</b> {ticket.name} <b><br />Prize:</b> {ticket.prize}
+            </li>
         )
         return (
             <div className="container">
@@ -244,10 +190,10 @@ class App extends Component {
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>#ID</th>
                                             <th>Player</th>
-                                            <th>Credit</th>
+                                            <th>Credit: <i className="fa fa-dollar"></i></th>
                                             <th>Numbers</th>
+                                            <th>Bet: <i className="fa fa-dollar"></i></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -266,13 +212,13 @@ class App extends Component {
                                 <div className={this.state.isPlaying ? 'animated flipInX' : 'hidden'}>
                                     <h1 className="text-center"># {this.state.draw.length}</h1>
                                     <h2 className="text-center">ODDS</h2>
-                                    <h3 className="text-center animated tada infinite">x {getOdds(this.state.draw.length)}</h3>
+                                    <h3 className="text-center animated tada infinite">{this.state.draw.length < 6 ? '' : 'x ' + odds[this.state.draw.length]}</h3>
                                 </div>
-                                <button disabled={this.state.isPlaying} onClick={this.newGame} className="btn btn-success btn-block">Star game</button>
+                                <button disabled={this.state.isPlaying || this.state.tickets.length === 0} onClick={this.newGame} className="btn btn-success btn-block">Star game</button>
                             </div>
                         </div>
                         <ul className="list-group text-center">
-                            {winner}
+                            {winners}
                         </ul>
                     </div>
                     <div className="col-md-5">

@@ -1,38 +1,34 @@
-module.exports = {
-    // Match items - add class.
+var self = module.exports = {
     addClass: function (draw, number) {
         if (draw.indexOf(number) !== - 1) {
             return "match animated flash"
         }
         else {
-            return ""
+            return "default"
         }
     },
-    getRandom: function () {
-        const min = 1
-        const max = 48
+    getRandom() {
+        const min = 1;
+        const max = 48;
         return Math.floor(Math.random() * (max - min)) + min;
     },
-    getOdds: function (snumber) { // 6    snumber - 5 = 1
-        let odds = [10000, 7500, 5000, 2500, 1000, 500, 300, 200, 150, 100, 90, 80, 70, 60, 50, 40, 30, 25, 20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    getRandomCombination(size) {
+        let random = 0;
+        let joined = [];
 
-        if (snumber <= 6) { snumber = 0 }
-        else { snumber = snumber - 6 }
-        return odds[snumber];
-    },
-    setCredit: function (winners, tickets) {
-        for (var d in winners) {
-            for (var t in tickets) {
-                if (winners[d].id === tickets[t].id) {
-                    tickets[t].credit += winners[d].prize
-                }
+        while (joined.length < size) {
+            random = self.getRandom()
+            if (joined.indexOf(random) === -1) {
+                joined.push(random);
+            }
+            else {
+                random = self.getRandom()
             }
         }
-        return tickets
+        return joined
     },
-    makeCopy: function(array){
+    makeCopy: function (array) {
         let copy = array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
         return copy
     }
-
 }
