@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { addClass, getRandomCombination, makeCopy } from './helper.js';
-import odds from './odds.js';
-import color from './colors.js';
-import playernames from './names.js';
+import { addClass, getRandomCombination, makeCopy } from './helper';
+import odds from './odds';
+import color from './colors';
+import playernames from './names';
+import config from './config'; // Game configuration
 import './App.css';
 import './Animate.css';
 
@@ -23,14 +24,14 @@ class App extends Component {
 
     // Ticket constructor 
     Ticket(name, credit, bet, numbers) {
-        const numberslength = 6;
+        const numberslength = config["numberslength"];
         let randomid = Math.floor(Math.random() * (9999 - 1)) + 1
         this.id = randomid
         this.name = name || getName()
-        this.credit = credit || 1000
+        this.credit = credit || config["credit"]
         this.numbers = numbers || getRandomCombination(numberslength)
         this.match = 0 // Broj pogodaka
-        this.bet = bet || 100
+        this.bet = bet || config["bet"]
         this.prize = 0
 
         // Get random Player Name from names.js
@@ -79,12 +80,12 @@ class App extends Component {
 
     // Drawing
     drawing() {
-        const combinationslength = 35;
+        const combinationslength = config["combinationslength"];
         let combinations = getRandomCombination(combinationslength);
         let joined = [];
         let join = [];
         let start;
-        const timeout = 1000;
+        const timeout = config["gamespeed"];
 
         // Recursive function - Reading drawed combinations
         (start = (counter) => {
