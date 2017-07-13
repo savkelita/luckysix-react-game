@@ -28,7 +28,6 @@ var self = module.exports = {
         return joined
     },
     makeCopy: function (array) {
-        let copy = array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
-        return copy
+        return array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
     }
 }

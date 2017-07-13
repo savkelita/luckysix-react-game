@@ -5,7 +5,6 @@ import color from './colors';
 import playernames from './names';
 import config from './config'; // Game configuration
 import './App.css';
-import './Animate.css';
 
 class App extends Component {
     constructor() {
@@ -63,9 +62,10 @@ class App extends Component {
     // Let's play game
     newGame() {
         const tickets = this.state.tickets;
+        const bet = config["bet"];
         let ticketscopy = makeCopy(tickets);
 
-        ticketscopy = ticketscopy.filter((ticket => ticket.credit !== 0)).map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
+        ticketscopy = ticketscopy.filter((ticket => ticket.credit >= bet)).map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
 
         // Set new state.
         this.setState({
@@ -154,8 +154,10 @@ class App extends Component {
         const tickets = this.state.tickets;
 
         let drawed = draw.map((number, index) =>
-            <li className={"ball animated flip " + color[number]} key={index}>
-                <span className="ballInside">{number}</span>
+            <li className="animated flip" key={index}>
+                <span className={"ball " + color[number]}>
+                    <span className="ballInside">{number}</span>
+                </span>
             </li>
         )
 
