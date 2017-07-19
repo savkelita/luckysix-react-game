@@ -2,8 +2,6 @@
 
 Lucky balls 6/48 is a game in which player chooses 6 numbers out of 48 in total, where 35 balls are drawn in each game. When the six played numbers are drawn within those 35 in the game, the ticket is winning. The odd is calculated based on how soon in the game the player had matched all six numbers on the ticket with the numbers drawn.
 
-**Text taken from:** [LuckyBalls.RS](https://www.luckyballs.rs/).
-
 #### How to run it yourself
 1). Have a desired project directory. e.g. mine is `/Users/savke/Practice`. Open your terminal; to navigate to that directory, type `cd ~/Practice`.
 
