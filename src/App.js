@@ -16,9 +16,6 @@ class App extends Component {
             isPlaying: false
         };
 
-        this.makeTicket = this.makeTicket.bind(this);
-        this.newGame = this.newGame.bind(this);
-
     }
 
     // Ticket constructor 
@@ -42,7 +39,7 @@ class App extends Component {
     }
 
     // Create ticket
-    makeTicket() {
+    makeTicket = () => {
         let ticket = {}
         let listOfTickets = []
 
@@ -60,7 +57,7 @@ class App extends Component {
     }
 
     // Let's play game
-    newGame() {
+    newGame = () => {
         const tickets = this.state.tickets;
         const bet = config["bet"];
         let ticketscopy = makeCopy(tickets);
@@ -79,7 +76,7 @@ class App extends Component {
     }
 
     // Drawing
-    drawing() {
+    drawing = () => {
         const combinationslength = config["combinationslength"];
         let combinations = getRandomCombination(combinationslength);
         let joined = [];
@@ -113,7 +110,7 @@ class App extends Component {
     }
 
     // Looking for winners - Set prize, matched values etc.
-    matching(number) {
+    matching = (number) => {
         const draws = this.state.draw;
         const tickets = this.state.tickets;
         let coef = odds[draws.length]; // Take odds.
@@ -135,21 +132,21 @@ class App extends Component {
     }
 
     // Game is over
-    gameIsOver() {
+    gameIsOver = () => {
         this.setState({
             isPlaying: false
         })
     }
 
     // Real-time winner checker
-    lookingForWinners() {
+    lookingForWinners = () => {
         const tickets = this.state.tickets;
         const draws = this.state.draw;
 
         return tickets.filter(ticket => ticket.numbers.every(number => draws.some(draw => draw === number)))
     }
 
-    render() {
+    render = () => {
         const draw = this.state.draw;
         const tickets = this.state.tickets;
 

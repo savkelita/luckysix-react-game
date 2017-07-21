@@ -1,5 +1,5 @@
 var self = module.exports = {
-    addClass: function (draw, number) {
+    addClass: (draw, number) => {
         if (draw.indexOf(number) !== - 1) {
             return "match animated flash"
         }
@@ -7,12 +7,12 @@ var self = module.exports = {
             return "default"
         }
     },
-    getRandom() {
+    getRandom: () => {
         const min = 1;
         const max = 48;
         return Math.floor(Math.random() * (max - min)) + min;
     },
-    getRandomCombination(size) {
+    getRandomCombination: (size) => {
         let random = 0;
         let joined = [];
 
@@ -27,7 +27,7 @@ var self = module.exports = {
         }
         return joined
     },
-    makeCopy: function (array) {
+    makeCopy: (array) => {
         return array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
     }
 }
