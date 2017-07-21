@@ -1,8 +1,11 @@
 {
   "name": "trening-app",
   "version": "0.1.0",
+  "main": "lib/index.js",
   "private": true,
   "dependencies": {
+    "flow-bin": "^0.50.0",
+    "flow-remove-types": "^1.2.1",
     "react": "^15.5.4",
     "react-dom": "^15.5.4"
   },
@@ -11,8 +14,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "flow-remove-types src/ -d lib/",
+    "prepublish": "npm run build",
     "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "flow": "flow"
   }
 }

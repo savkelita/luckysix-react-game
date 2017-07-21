@@ -1,0 +1,9 @@
+[ignore]
+.*/__node_modules__/.*
+[include]
+
+[libs]
+
+[options]
+
+[lints]

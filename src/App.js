@@ -1,3 +1,4 @@
+// @flow
 import React, { Component } from 'react';
 import { addClass, getRandomCombination, makeCopy } from './helper';
 import odds from './odds';
@@ -7,6 +8,22 @@ import config from './config'; // Game configuration
 import './App.css';
 
 class App extends Component {
+
+    id: number;
+    name: string;
+    credit: number;
+    numbers: Array<number>;
+    match: number;
+    bet: number;
+    prize: number;
+    timerID: number;
+
+    state: {
+        tickets: Array<Object>,
+        draw: Array<number>,
+        isPlaying: boolean,
+    }
+    
     constructor() {
         super();
 
@@ -14,80 +31,68 @@ class App extends Component {
             tickets: [],
             draw: [],
             isPlaying: false
-        };
-
-        this.makeTicket = this.makeTicket.bind(this);
-        this.newGame = this.newGame.bind(this);
+        }
 
     }
 
-    // Ticket constructor 
-    Ticket(name, credit, bet, numbers) {
-        const numberslength = config["numberslength"];
-        let randomid = Math.floor(Math.random() * (9999 - 1)) + 1
-        this.id = randomid
-        this.name = name || getName()
-        this.credit = credit || config["credit"]
-        this.numbers = numbers || getRandomCombination(numberslength)
-        this.match = 0 // Broj pogodaka
-        this.bet = bet || config["bet"]
-        this.prize = 0
+    Ticket(name?: string, credit?: number, numbers?: Array<number>, bet?: number): void {
 
-        // Get random Player Name from names.js
-        function getName() {
-            let random = Math.floor(Math.random() * playernames.length)
-            let name = playernames[random];
+        const numberslength: number = config["numberslength"];
+        let randomid: number = Math.floor(Math.random() * (9999 - 1)) + 1;
+
+        this.id = randomid;
+        this.name = name || getName();
+        this.credit = credit || config["credit"];
+        this.numbers = numbers || getRandomCombination(numberslength);
+        this.match = 0;
+        this.bet = bet || config["bet"];
+        this.prize = 0;
+
+        function getName(): string {
+            let random: number = Math.floor(Math.random() * playernames.length);
+            let name: string = playernames[random];
             return name;
         }
     }
 
-    // Create ticket
-    makeTicket() {
-        let ticket = {}
-        let listOfTickets = []
+    makeTicket = (): void => {
+        let ticket: Object = {};
+        let listOfTickets: Array<Object> = [];
 
-        // Make ticket object.
         ticket = new this.Ticket()
 
-        // Push ticket to array.
         listOfTickets.push(ticket)
 
-        // Set tickets to state.
         this.setState({
             draw: [],
             tickets: this.state.tickets.concat(listOfTickets)
         })
     }
 
-    // Let's play game
-    newGame() {
+    newGame = (): void => {
         const tickets = this.state.tickets;
         const bet = config["bet"];
-        let ticketscopy = makeCopy(tickets);
+        let ticketscopy: Array<Object> = makeCopy(tickets);
 
         ticketscopy = ticketscopy.filter((ticket => ticket.credit >= bet)).map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
 
-        // Set new state.
         this.setState({
             draw: [],
             tickets: [].concat(ticketscopy),
             isPlaying: true
         })
 
-        // Game is LIVE! Go to Drawing
         this.drawing()
     }
 
-    // Drawing
-    drawing() {
-        const combinationslength = config["combinationslength"];
-        let combinations = getRandomCombination(combinationslength);
-        let joined = [];
-        let join = [];
-        let start;
-        const timeout = config["gamespeed"];
+    drawing = (): void => {
+        const combinationslength: number = config["combinationslength"];
+        let combinations: Array<number> = getRandomCombination(combinationslength);
+        let joined: Array<number> = [];
+        let join: Array<number> = [];
+        let start: Function;
+        const timeout: number = config["gamespeed"];
 
-        // Recursive function - Reading drawed combinations
         (start = (counter) => {
             if (counter < combinations.length - 1) {
                 this.timerID = setTimeout(() => {
@@ -100,27 +105,26 @@ class App extends Component {
 
                     this.matching(combinations[counter]);
 
-                    join = [] // Reset join
-                    start(counter) // Recursion call
+                    join = []
+                    start(counter)
                 }, timeout)
             }
             else {
                 clearTimeout(this.timerID)
                 this.gameIsOver()
             }
-        })(-1); // IIFE
+        })(-1);
 
     }
 
-    // Looking for winners - Set prize, matched values etc.
-    matching(number) {
+    matching = (value: number): void => {
         const draws = this.state.draw;
         const tickets = this.state.tickets;
-        let coef = odds[draws.length]; // Take odds.
-        let ticketscopy = makeCopy(tickets); // Make a copy of all tickets.
+        let coef: number = odds[draws.length];
+        let ticketscopy: Array<Object> = makeCopy(tickets);
 
         ticketscopy.forEach((ticket) => {
-            if (ticket.numbers.indexOf(number) !== -1) {
+            if (ticket.numbers.indexOf(value) !== -1) {
                 Object.assign({}, ticket, { match: ticket.match += 1 })
                 if (ticket.match === 6) {
                     Object.assign({}, ticket, { credit: ticket.credit += ticket.bet * coef, prize: ticket.prize = ticket.bet * coef })
@@ -134,22 +138,20 @@ class App extends Component {
 
     }
 
-    // Game is over
-    gameIsOver() {
+    gameIsOver = (): void => {
         this.setState({
             isPlaying: false
         })
     }
 
-    // Real-time winner checker
-    lookingForWinners() {
+    lookingForWinners = (): Array<Object> => {
         const tickets = this.state.tickets;
         const draws = this.state.draw;
 
         return tickets.filter(ticket => ticket.numbers.every(number => draws.some(draw => draw === number)))
     }
 
-    render() {
+    render = () => {
         const draw = this.state.draw;
         const tickets = this.state.tickets;
 
