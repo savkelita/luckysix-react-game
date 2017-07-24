@@ -7,23 +7,26 @@ import playernames from './names';
 import config from './config'; // Game configuration
 import './App.css';
 
+type Tickets = {
+    id: number,
+    name: string,
+    credit: number,
+    numbers: Array<number>,
+    match: number,
+    bet: number,
+    prize: number
+}
+
 class App extends Component {
 
-    id: number;
-    name: string;
-    credit: number;
-    numbers: Array<number>;
-    match: number;
-    bet: number;
-    prize: number;
     timerID: number;
 
     state: {
-        tickets: Array<Object>,
+        tickets: Array<Tickets>,
         draw: Array<number>,
         isPlaying: boolean,
     }
-    
+
     constructor() {
         super();
 
@@ -35,33 +38,41 @@ class App extends Component {
 
     }
 
-    Ticket(name?: string, credit?: number, numbers?: Array<number>, bet?: number): void {
-
+    makeTicket = (): Object => {
         const numberslength: number = config["numberslength"];
         let randomid: number = Math.floor(Math.random() * (9999 - 1)) + 1;
+        let name = getName();
+        let credit = config["credit"];
+        let numbers = getRandomCombination(numberslength);
+        let match = 0;
+        let bet = config["bet"];
+        let prize = 0;
 
-        this.id = randomid;
-        this.name = name || getName();
-        this.credit = credit || config["credit"];
-        this.numbers = numbers || getRandomCombination(numberslength);
-        this.match = 0;
-        this.bet = bet || config["bet"];
-        this.prize = 0;
+        let ticket: Tickets = {
+            id: randomid,
+            name: name,
+            credit: credit,
+            numbers: numbers,
+            match: match,
+            bet: bet,
+            prize: prize
+        };
 
         function getName(): string {
             let random: number = Math.floor(Math.random() * playernames.length);
             let name: string = playernames[random];
             return name;
         }
+
+        return ticket;
     }
 
-    makeTicket = (): void => {
-        let ticket: Object = {};
-        let listOfTickets: Array<Object> = [];
-
-        ticket = new this.Ticket()
-
-        listOfTickets.push(ticket)
+    // Add ticket
+    addTicket = (): void => {
+        let listOfTickets: Array<Tickets> = [];
+        let ticket = this.makeTicket();
+        
+        listOfTickets.push(ticket);
 
         this.setState({
             draw: [],
@@ -191,7 +202,7 @@ class App extends Component {
                                 List of tickets
                             </div>
                             <div className="panel-body">
-                                <button disabled={this.state.isPlaying} onClick={this.makeTicket} className="btn btn-default btn-block">Random Ticket</button>
+                                <button disabled={this.state.isPlaying} onClick={this.addTicket} className="btn btn-default btn-block">Random Ticket</button>
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
