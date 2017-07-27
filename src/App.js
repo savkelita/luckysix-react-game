@@ -18,41 +18,46 @@ class App extends Component {
 
     }
 
-    // Ticket constructor 
-    Ticket(name, credit, bet, numbers) {
+    // Make ticket 
+    makeTicket = () => {
         const numberslength = config["numberslength"];
-        let randomid = Math.floor(Math.random() * (9999 - 1)) + 1
-        this.id = randomid
-        this.name = name || getName()
-        this.credit = credit || config["credit"]
-        this.numbers = numbers || getRandomCombination(numberslength)
-        this.match = 0 // Broj pogodaka
-        this.bet = bet || config["bet"]
-        this.prize = 0
+        let randomid = Math.floor(Math.random() * (9999 - 1)) + 1;
+        let name = getName();
+        let credit = config["credit"];
+        let numbers = getRandomCombination(numberslength);
+        let match = 0;
+        let bet = config["bet"];
+        let prize = 0;
 
-        // Get random Player Name from names.js
+        let ticket = {
+            id: randomid,
+            name: name,
+            credit: credit,
+            numbers: numbers,
+            match: match,
+            bet: bet,
+            prize: prize
+        };
+
         function getName() {
-            let random = Math.floor(Math.random() * playernames.length)
+            let random = Math.floor(Math.random() * playernames.length);
             let name = playernames[random];
             return name;
         }
+
+        return ticket;
     }
 
-    // Create ticket
-    makeTicket = () => {
-        let ticket = {}
-        let listOfTickets = []
+    // Add ticket
+    addTicket = () => {
+        let listOfTickets = [];
+        let ticket = this.makeTicket();
 
-        // Make ticket object.
-        ticket = new this.Ticket()
+        listOfTickets.push(ticket);
 
-        // Push ticket to array.
-        listOfTickets.push(ticket)
-
-        // Set tickets to state.
         this.setState({
             draw: [],
-            tickets: this.state.tickets.concat(listOfTickets)
+            tickets: [...this.state.tickets, ...listOfTickets]
         })
     }
 
@@ -62,16 +67,14 @@ class App extends Component {
         const bet = config["bet"];
         let ticketscopy = makeCopy(tickets);
 
-        ticketscopy = ticketscopy.filter((ticket => ticket.credit >= bet)).map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
+        ticketscopy = ticketscopy.filter((ticket => ticket.credit >= bet)).map(ticket => ({ ...ticket, match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
 
-        // Set new state.
         this.setState({
             draw: [],
-            tickets: [].concat(ticketscopy),
+            tickets: [...ticketscopy],
             isPlaying: true
         })
 
-        // Game is LIVE! Go to Drawing
         this.drawing()
     }
 
@@ -90,7 +93,7 @@ class App extends Component {
                 this.timerID = setTimeout(() => {
                     counter++
                     join.push(combinations[counter])
-                    joined = this.state.draw.concat(join)
+                    joined = [...this.state.draw, ...join]
                     this.setState({
                         draw: joined
                     })
@@ -118,15 +121,17 @@ class App extends Component {
 
         ticketscopy.forEach((ticket) => {
             if (ticket.numbers.indexOf(number) !== -1) {
-                Object.assign({}, ticket, { match: ticket.match += 1 })
+                // eslint-disable-next-line
+                ({ ...ticket, match: ticket.match += 1 })
                 if (ticket.match === 6) {
-                    Object.assign({}, ticket, { credit: ticket.credit += ticket.bet * coef, prize: ticket.prize = ticket.bet * coef })
+                    // eslint-disable-next-line
+                    ({ ...ticket, credit: ticket.credit += ticket.bet * coef, prize: ticket.prize = ticket.bet * coef })
                 }
             }
         })
 
         this.setState({
-            tickets: [].concat(ticketscopy)
+            tickets: [...ticketscopy]
         })
 
     }
@@ -186,7 +191,7 @@ class App extends Component {
                                 List of tickets
                             </div>
                             <div className="panel-body">
-                                <button disabled={this.state.isPlaying} onClick={this.makeTicket} className="btn btn-default btn-block">Random Ticket</button>
+                                <button disabled={this.state.isPlaying} onClick={this.addTicket} className="btn btn-default btn-block">Random Ticket</button>
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
