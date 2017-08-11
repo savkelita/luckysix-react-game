@@ -1,28 +1,22 @@
 // @flow
 import React, { Component } from 'react';
 import { addClass, getRandomCombination, makeCopy } from './helper';
-import odds from './odds';
 import color from './colors';
 import playernames from './names';
 import config from './config'; // Game configuration
 import './App.css';
 
-type Tickets = {
+type Ticket = {
     id: number,
     name: string,
     credit: number,
-    numbers: Array<number>,
-    match: number,
-    bet: number,
-    prize: number
-}
-
+    numbers: Array<number>
+};
 class App extends Component {
-
     timerID: number;
 
     state: {
-        tickets: Array<Tickets>,
+        tickets: Array<Ticket>,
         draw: Array<number>,
         isPlaying: boolean,
     }
@@ -38,85 +32,56 @@ class App extends Component {
 
     }
 
-    makeTicket = (): Object => {
-        const numberslength: number = config["numberslength"];
-        let randomid: number = Math.floor(Math.random() * (9999 - 1)) + 1;
-        let name = getName();
-        let credit = config["credit"];
-        let numbers = getRandomCombination(numberslength);
-        let match = 0;
-        let bet = config["bet"];
-        let prize = 0;
-
-        let ticket: Tickets = {
-            id: randomid,
-            name: name,
-            credit: credit,
-            numbers: numbers,
-            match: match,
-            bet: bet,
-            prize: prize
-        };
+    makeTicket = (): Ticket => {
+        const numberslength = config.numberslength;
 
         function getName(): string {
-            let random: number = Math.floor(Math.random() * playernames.length);
-            let name: string = playernames[random];
+            let random = Math.floor(Math.random() * playernames.length);
+            let name = playernames[random];
             return name;
         }
 
-        return ticket;
+        return {
+            id: Math.floor(Math.random() * (9999 - 1)) + 1,
+            name: getName(),
+            credit: config.credit,
+            numbers: getRandomCombination(numberslength),
+        }
     }
 
-    // Add ticket
     addTicket = (): void => {
-        let listOfTickets: Array<Tickets> = [];
-        let ticket = this.makeTicket();
-        
-        listOfTickets.push(ticket);
-
         this.setState({
             draw: [],
-            tickets: this.state.tickets.concat(listOfTickets)
+            tickets: [...this.state.tickets, this.makeTicket()]
         })
     }
 
     newGame = (): void => {
-        const tickets = this.state.tickets;
-        const bet = config["bet"];
-        let ticketscopy: Array<Object> = makeCopy(tickets);
-
-        ticketscopy = ticketscopy.filter((ticket => ticket.credit >= bet)).map((ticket) => Object.assign({}, ticket, { match: 0, prize: 0, credit: ticket.credit -= ticket.bet }));
 
         this.setState({
             draw: [],
-            tickets: [].concat(ticketscopy),
+            tickets: this.state.tickets.filter(ticket => ticket.credit >= config.bet).map(ticket => ({ ...ticket, credit: ticket.credit -= config.bet })),
             isPlaying: true
         })
 
-        this.drawing()
+        this.drawing();
     }
 
     drawing = (): void => {
-        const combinationslength: number = config["combinationslength"];
-        let combinations: Array<number> = getRandomCombination(combinationslength);
-        let joined: Array<number> = [];
-        let join: Array<number> = [];
+        const combinationslength = Object.keys(config.odds).length + 5;
+        let combinations = getRandomCombination(combinationslength);
         let start: Function;
-        const timeout: number = config["gamespeed"];
+        const timeout = config.gamespeed;
 
         (start = (counter) => {
             if (counter < combinations.length - 1) {
                 this.timerID = setTimeout(() => {
                     counter++
-                    join.push(combinations[counter])
-                    joined = this.state.draw.concat(join)
+
                     this.setState({
-                        draw: joined
+                        draw: [...this.state.draw, combinations[counter]]
                     })
 
-                    this.matching(combinations[counter]);
-
-                    join = []
                     start(counter)
                 }, timeout)
             }
@@ -128,38 +93,31 @@ class App extends Component {
 
     }
 
-    matching = (value: number): void => {
-        const draws = this.state.draw;
-        const tickets = this.state.tickets;
-        let coef: number = odds[draws.length];
-        let ticketscopy: Array<Object> = makeCopy(tickets);
+    winners = (tickets: Array<Ticket>, draw: Array<number>): Array<Ticket> => {
+        let chunks = draw.slice(6).reduce((acc, x) => [...acc, [...acc[acc.length - 1], x]], [draw.slice(0, 6)])
 
-        ticketscopy.forEach((ticket) => {
-            if (ticket.numbers.indexOf(value) !== -1) {
-                Object.assign({}, ticket, { match: ticket.match += 1 })
-                if (ticket.match === 6) {
-                    Object.assign({}, ticket, { credit: ticket.credit += ticket.bet * coef, prize: ticket.prize = ticket.bet * coef })
-                }
-            }
-        })
+        return chunks.reduce((acc, x) => {
 
-        this.setState({
-            tickets: [].concat(ticketscopy)
-        })
+            let winners = tickets.filter(ticket => ticket.numbers.every(number => x.some(y => y === number) && acc.every(x => x.id !== ticket.id)))
 
+            return [...acc, ...winners.map(ticket => ({ ...ticket, credit: ticket.credit += config.bet * config.odds[x.length] }))]
+        }, [])
     }
 
     gameIsOver = (): void => {
+        let ticketscopy = makeCopy(this.state.tickets);
+        let winners = this.winners(ticketscopy, this.state.draw)
+
+        ticketscopy.forEach(ticket => winners.forEach(wticket => ticket.id === wticket.id ? ({...ticket, credit: ticket.credit = wticket.credit}) : ticket))
+
         this.setState({
-            isPlaying: false
+            isPlaying: false,
+            tickets: [...ticketscopy]
         })
     }
 
-    lookingForWinners = (): Array<Object> => {
-        const tickets = this.state.tickets;
-        const draws = this.state.draw;
-
-        return tickets.filter(ticket => ticket.numbers.every(number => draws.some(draw => draw === number)))
+    lookingForWinners = (): Array<Ticket> => {
+        return this.state.tickets.filter(ticket => ticket.numbers.every(number => this.state.draw.some(x => x === number)))
     }
 
     render = () => {
@@ -175,7 +133,7 @@ class App extends Component {
         )
 
         let players = tickets.map((player, index) =>
-            <tr className={player.match === 6 ? 'mark animated tada' : 'animated fadeInUp'} key={index}>
+            <tr className="animated fadeInUp" key={index}>
                 <td>{player.name}</td>
                 <td><b>{player.credit.toFixed(2)}</b></td>
                 <td>
@@ -183,14 +141,14 @@ class App extends Component {
                         return <span key={index} className={addClass(draw, number)}>&nbsp;{number}&nbsp;</span>
                     })}
                 </td>
-                <td>{player.bet.toFixed(2)}</td>
+                <td>{config.bet.toFixed(2)}</td>
             </tr>
         )
 
         let winners = this.lookingForWinners().map((ticket, index) =>
             <li key={index} className="list-group-item animated fadeInUp">
                 <i className="fa fa-trophy fa-2x"></i>
-                <b><br />Name:</b> {ticket.name} <b><br />Prize:</b> {ticket.prize}
+                <b><br />Name:</b> {ticket.name} <br />
             </li>
         )
         return (
@@ -228,7 +186,7 @@ class App extends Component {
                                 <div className={this.state.isPlaying ? 'animated flipInX' : 'hidden'}>
                                     <h1 className="text-center"># {this.state.draw.length}</h1>
                                     <h2 className="text-center">ODDS</h2>
-                                    <h3 className="text-center animated tada infinite">{this.state.draw.length < 6 ? '' : 'x ' + odds[this.state.draw.length]}</h3>
+                                    <h3 className="text-center animated tada infinite">{this.state.draw.length < 6 ? '' : 'x ' + config.odds[this.state.draw.length]}</h3>
                                 </div>
                                 <button disabled={this.state.isPlaying || this.state.tickets.length === 0} onClick={this.newGame} className="btn btn-success btn-block">Star game</button>
                             </div>

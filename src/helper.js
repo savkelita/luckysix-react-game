@@ -29,6 +29,6 @@ var self = module.exports = {
         return joined
     },
     makeCopy: (array: Array<Object>): Array<Object> => {
-        return array.map((item) => Object.assign({}, item, { numbers: [].concat(item.numbers) }))
+        return array.map(item => ({...item, numbers: [...item.numbers]}))
     }
 }
