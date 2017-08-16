@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { addClass, getRandomCombination, makeCopy } from './helper';
 import color from './colors';
 import playernames from './names';
-import config from './config'; // Game configuration
+import config from './config';
 import './App.css';
 
 type Ticket = {
@@ -13,11 +13,10 @@ type Ticket = {
     numbers: Array<number>
 };
 class App extends Component {
-    timerID: number;
-
     state: {
         tickets: Array<Ticket>,
-        draw: Array<number>,
+        combination: Array<number>,
+        lastDrawn: ?number,
         isPlaying: boolean,
     }
 
@@ -26,7 +25,8 @@ class App extends Component {
 
         this.state = {
             tickets: [],
-            draw: [],
+            combination: [],
+            lastDrawn: null,
             isPlaying: false
         }
 
@@ -50,47 +50,35 @@ class App extends Component {
     }
 
     addTicket = (): void => {
+        if (this.state.isPlaying) return;
+
         this.setState({
-            draw: [],
+            combination: [], // TODO: ispraviti
+            lastDrawn: null, // TODO: ispraviti
             tickets: [...this.state.tickets, this.makeTicket()]
         })
     }
 
-    newGame = (): void => {
-
+    startGame = (): void => {
+        const maxCombination = Math.max(...Object.keys(config.odds).map(x => Number(x)))
         this.setState({
-            draw: [],
+            combination: getRandomCombination(maxCombination),
             tickets: this.state.tickets.filter(ticket => ticket.credit >= config.bet).map(ticket => ({ ...ticket, credit: ticket.credit -= config.bet })),
             isPlaying: true
         })
-
-        this.drawing();
+        setTimeout(() => { this.drawNext() }, config.gamespeed)
     }
 
-    drawing = (): void => {
-        const combinationslength = Object.keys(config.odds).length + 5;
-        let combinations = getRandomCombination(combinationslength);
-        let start: Function;
-        const timeout = config.gamespeed;
-
-        (start = (counter) => {
-            if (counter < combinations.length - 1) {
-                this.timerID = setTimeout(() => {
-                    counter++
-
-                    this.setState({
-                        draw: [...this.state.draw, combinations[counter]]
-                    })
-
-                    start(counter)
-                }, timeout)
-            }
-            else {
-                clearTimeout(this.timerID)
-                this.gameIsOver()
-            }
-        })(-1);
-
+    drawNext = (): void => {
+        const index = this.state.lastDrawn != null ? this.state.combination.indexOf(this.state.lastDrawn) : -1;
+        if (index < this.state.combination.length - 1) {
+            this.setState({
+                lastDrawn: this.state.combination[index + 1]
+            })
+            setTimeout(() => { this.drawNext() }, config.gamespeed)
+        } else {
+            this.gameIsOver();
+        }
     }
 
     winners = (tickets: Array<Ticket>, draw: Array<number>): Array<Ticket> => {
@@ -104,27 +92,31 @@ class App extends Component {
         }, [])
     }
 
+    getDrawn = (combination: Array<number>, lastdrawn: ?number): Array<number> =>
+        (this.state.isPlaying && lastdrawn != null) ? combination.slice(0, combination.indexOf(lastdrawn) + 1) : []
+
+
     gameIsOver = (): void => {
         let ticketscopy = makeCopy(this.state.tickets);
-        let winners = this.winners(ticketscopy, this.state.draw)
+        let winners = this.winners(ticketscopy, this.state.combination)
 
-        ticketscopy.forEach(ticket => winners.forEach(wticket => ticket.id === wticket.id ? ({...ticket, credit: ticket.credit = wticket.credit}) : ticket))
+        ticketscopy.map(ticket => winners.some(x => x.id === ticket.id))
 
         this.setState({
+            lastDrawn: null,
             isPlaying: false,
-            tickets: [...ticketscopy]
+            tickets: ticketscopy
         })
     }
 
     lookingForWinners = (): Array<Ticket> => {
-        return this.state.tickets.filter(ticket => ticket.numbers.every(number => this.state.draw.some(x => x === number)))
+        return this.state.tickets.filter(ticket => ticket.numbers.every(number => this.getDrawn(this.state.combination, this.state.lastDrawn).some(x => x === number)))
     }
 
     render = () => {
-        const draw = this.state.draw;
-        const tickets = this.state.tickets;
+        const { lastDrawn, combination, tickets, isPlaying } = this.state;
 
-        let drawed = draw.map((number, index) =>
+        let drawed = this.getDrawn(combination, lastDrawn).map((number, index) =>
             <li className="animated flip" key={index}>
                 <span className={"ball " + color[number]}>
                     <span className="ballInside">{number}</span>
@@ -138,7 +130,7 @@ class App extends Component {
                 <td><b>{player.credit.toFixed(2)}</b></td>
                 <td>
                     {player.numbers.map((number, index) => {
-                        return <span key={index} className={addClass(draw, number)}>&nbsp;{number}&nbsp;</span>
+                        return <span key={index} className={addClass(this.getDrawn(combination, lastDrawn), number)}>&nbsp;{number}&nbsp;</span>
                     })}
                 </td>
                 <td>{config.bet.toFixed(2)}</td>
@@ -160,7 +152,7 @@ class App extends Component {
                                 List of tickets
                             </div>
                             <div className="panel-body">
-                                <button disabled={this.state.isPlaying} onClick={this.addTicket} className="btn btn-default btn-block">Random Ticket</button>
+                                <button disabled={isPlaying} onClick={this.addTicket} className="btn btn-default btn-block">Random Ticket</button>
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
@@ -184,11 +176,11 @@ class App extends Component {
                             </div>
                             <div className="panel-body">
                                 <div className={this.state.isPlaying ? 'animated flipInX' : 'hidden'}>
-                                    <h1 className="text-center"># {this.state.draw.length}</h1>
+                                    <h1 className="text-center"># {this.getDrawn(combination, lastDrawn).length}</h1>
                                     <h2 className="text-center">ODDS</h2>
-                                    <h3 className="text-center animated tada infinite">{this.state.draw.length < 6 ? '' : 'x ' + config.odds[this.state.draw.length]}</h3>
+                                    <h3 className="text-center animated tada infinite">{this.getDrawn(combination, lastDrawn).length < 6 ? '' : 'x ' + config.odds[this.getDrawn(combination, lastDrawn).length]}</h3>
                                 </div>
-                                <button disabled={this.state.isPlaying || this.state.tickets.length === 0} onClick={this.newGame} className="btn btn-success btn-block">Star game</button>
+                                <button disabled={this.state.isPlaying || this.state.tickets.length === 0} onClick={this.startGame} className="btn btn-success btn-block">Star game</button>
                             </div>
                         </div>
                         <ul className="list-group text-center">
