@@ -82,11 +82,12 @@ class App extends Component {
     }
 
     winners = (tickets: Array<Ticket>, draw: Array<number>): Array<Ticket> => {
+
         let chunks = draw.slice(6).reduce((acc, x) => [...acc, [...acc[acc.length - 1], x]], [draw.slice(0, 6)])
 
         return chunks.reduce((acc, x) => {
 
-            let winners = tickets.filter(ticket => ticket.numbers.every(number => x.some(y => y === number) && acc.every(x => x.id !== ticket.id)))
+            let winners = makeCopy(tickets).filter(ticket => ticket.numbers.every(number => x.some(y => y === number) && acc.every(x => x.id !== ticket.id)))
 
             return [...acc, ...winners.map(ticket => ({ ...ticket, credit: ticket.credit += config.bet * config.odds[x.length] }))]
         }, [])
@@ -97,15 +98,16 @@ class App extends Component {
 
 
     gameIsOver = (): void => {
-        let ticketscopy = makeCopy(this.state.tickets);
-        let winners = this.winners(ticketscopy, this.state.combination)
 
-        ticketscopy.map(ticket => winners.some(x => x.id === ticket.id))
+        let winners = this.winners(this.state.tickets, this.state.combination)
 
         this.setState({
             lastDrawn: null,
             isPlaying: false,
-            tickets: ticketscopy
+            tickets: this.state.tickets.map(ticket => {
+                let winner = winners.find(x => x.id === ticket.id)
+                return winner !== undefined ? ({ ...ticket, credit: ticket.credit = winner.credit }) : ticket
+            })
         })
     }
 
