@@ -1,4 +1,7 @@
-module.exports = [
+
+export const getPlayerName = () => names[Math.floor(Math.random() * names.length)];
+
+const names = [
   'Abbott',
   'Acevedo',
   'Acosta',

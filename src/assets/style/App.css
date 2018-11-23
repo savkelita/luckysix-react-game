@@ -11,28 +11,28 @@ body {
     transition: all 0.5s;
 }
 /* Ball colors */
-.crvena {
+.red {
     background: -webkit-radial-gradient(center, ellipse cover, #ff3019 0%, #cf0404 100%);
 }
-.zelena {
+.green {
     background: -webkit-radial-gradient(center, ellipse cover, #b4ddb4 0%, #83c783 17%, #52b152 33%, #008a00 67%, #005700 83%, #002400 100%);
 }
-.plava {
+.blue {
     background: -webkit-radial-gradient(center, ellipse cover, #499bea 0%, #082742 100%);
 }
-.ljubicasta {
+.purple {
     background: -webkit-radial-gradient(center, ellipse cover, #e570e7 0%, #c85ec7 47%, #a849a3 100%);
 }
-.braon {
+.brown {
     background: -webkit-radial-gradient(center, ellipse cover, #ed9017 0%, #a52a2a 100%);
 }
-.zuta {
+.yellow {
     background: -webkit-radial-gradient(center, ellipse cover, #ffe600 0%, #ffe000 100%);
 }
-.narandzasta {
+.orange {
     background: -webkit-radial-gradient(center, ellipse cover, #ff9800 0%, #ff7b0d 100%);
 }
-.crna {
+.black {
     background: -webkit-radial-gradient(center, ellipse cover, #191919 0%, #000000 100%);
 }
 /* Ball default styles */
