@@ -202,8 +202,16 @@ class Game extends Component {
         <div className="row">
           <div className="col-md-12">
             <div className="panel panel-default">
-              <div className="panel-heading">Dodaj igrača</div>
-              <div className="panel-body">
+              <div className="panel-heading">
+                <a
+                  className="btn btn-primary"
+                  data-toggle="collapse"
+                  href="#collapseExample"
+                >
+                  Dodaj igrača
+                </a>
+              </div>
+              <div className="panel-body collapse" id="collapseExample">
                 <div className="row">
                   <div className="col-md-5">
                     <div className="form-group">
@@ -253,7 +261,9 @@ class Game extends Component {
                     <ul className="list-inline">
                       {generateNumbers().map((number, index) => (
                         <button
-                          className="btn btn-default"
+                          className={`btn btn-default ${
+                            !numbers.find(x => x === number) ? "" : "selected"
+                          }`}
                           onClick={() => this.selectNumber(number)}
                           disabled={
                             numbers.length === 6 &&
@@ -272,8 +282,6 @@ class Game extends Component {
               </div>
             </div>
           </div>
-        </div>
-        <div className="row">
           <div className="col-md-6">
             <div className="panel panel-default">
               <div className="panel-heading">Lista tiketa</div>
@@ -292,20 +300,23 @@ class Game extends Component {
                       <th>Kredit($):</th>
                       <th>Brojevi:</th>
                       <th>Ulog($):</th>
-                      <th />
                     </tr>
                   </thead>
                   <tbody>
                     {tickets != null
                       ? tickets.map((player, index) => (
-                          <tr className="animated fadeInUp" key={index}>
+                          <tr
+                            style={{ height: 60 }}
+                            className="animated fadeInUp"
+                            key={index}
+                          >
                             <td>
+                              {player.name} <br />
                               <span style={{ color: "green" }}>
                                 {player.earnings > 0
                                   ? `+${player.earnings}`
                                   : null}
                               </span>
-                              {player.name}
                             </td>
                             <td>
                               <b>{player.credit}</b>
