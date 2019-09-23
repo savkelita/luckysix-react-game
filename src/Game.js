@@ -1,5 +1,9 @@
 import React, { Component } from "react";
-import { addClass, getRandomCombination, makeCopy } from "./assets/helper";
+import {
+  addClass,
+  getRandomCombination,
+  generateNumbers
+} from "./assets/helper";
 import { colors as color } from "./assets/game-config/colors";
 import { getPlayerName } from "./assets/game-config/names";
 import { config } from "./assets/game-config/config";
@@ -75,6 +79,13 @@ class Game extends Component {
     }, config.gamespeed);
   };
 
+  resetGame = () => {
+    this.setState({
+      ...this.state,
+      combination: []
+    });
+  };
+
   drawNext = () => {
     const index =
       this.state.lastDrawn != null
@@ -100,7 +111,7 @@ class Game extends Component {
         draw.slice(0, 6)
       ]);
     return chunks.reduce((acc, x) => {
-      const winners = makeCopy(tickets).filter(ticket =>
+      const winners = tickets.filter(ticket =>
         ticket.numbers.every(
           number =>
             x.some(y => y === number) && acc.every(x => x.id !== ticket.id)
@@ -150,7 +161,6 @@ class Game extends Component {
       )
     );
 
-  /* Novo */
   handleInput = e => {
     const { name, value } = e.target;
     this.setState({
@@ -186,21 +196,13 @@ class Game extends Component {
 
   render = () => {
     const { lastDrawn, combination, tickets, isPlaying } = this.state;
-    /* Ovo premesti, poziva se svaki put.... XD */
-    const generateNumbers = () => {
-      const temp = [];
-      for (let i = 1; i <= 48; i++) {
-        temp.push(i);
-      }
-      return temp;
-    };
     const { numbers } = this.state.player;
     return (
       <div className="container">
         <div className="row">
           <div className="col-md-12">
             <div className="panel panel-default">
-              <div className="panel-heading">Započni igru</div>
+              <div className="panel-heading">Dodaj igrača</div>
               <div className="panel-body">
                 <div className="row">
                   <div className="col-md-5">
@@ -212,6 +214,9 @@ class Game extends Component {
                         type="text"
                         className="form-control"
                         placeholder="Ime igrača"
+                        disabled={
+                          isPlaying || this.state.combination.length === 35
+                        }
                       />
                     </div>
                     <div className="form-group">
@@ -222,16 +227,21 @@ class Game extends Component {
                         type="number"
                         className="form-control"
                         placeholder="Kredit"
+                        disabled={
+                          isPlaying || this.state.combination.length === 35
+                        }
                       />
                     </div>
                     <button
                       disabled={
                         isPlaying ||
-                        !(
-                          this.state.player.name !== "" &&
-                          this.state.player.credit != null &&
-                          this.state.player.numbers.length === 6
-                        )
+                        (this.state.combination.length === 0 &&
+                          !(
+                            this.state.player.name !== "" &&
+                            this.state.player.credit != null &&
+                            this.state.player.numbers.length === 6
+                          )) ||
+                        this.state.combination.length === 35
                       }
                       onClick={() => this.addTicket(true)}
                       className="btn btn-default btn-block"
@@ -264,28 +274,25 @@ class Game extends Component {
           </div>
         </div>
         <div className="row">
-          <div className="col-md-5">
+          <div className="col-md-6">
             <div className="panel panel-default">
-              <div className="panel-heading">List of tickets</div>
+              <div className="panel-heading">Lista tiketa</div>
               <div className="panel-body">
                 <button
-                  disabled={isPlaying}
+                  disabled={isPlaying || this.state.combination.length === 35}
                   onClick={() => this.addTicket(false)}
                   className="btn btn-default btn-block"
                 >
-                  Random Ticket
+                  Generiši tiket
                 </button>
                 <table className="table table-hover">
                   <thead>
                     <tr>
-                      <th>Player</th>
-                      <th>
-                        Credit: <i className="fa fa-dollar"></i>
-                      </th>
-                      <th>Numbers</th>
-                      <th>
-                        Bet: <i className="fa fa-dollar"></i>
-                      </th>
+                      <th>Igrač</th>
+                      <th>Kredit($):</th>
+                      <th>Brojevi:</th>
+                      <th>Ulog($):</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
@@ -304,17 +311,19 @@ class Game extends Component {
                               <b>{player.credit}</b>
                             </td>
                             <td>
-                              {player.numbers.map((number, index) => (
-                                <span
-                                  key={index}
-                                  className={addClass(
-                                    this.getDrawn(combination, lastDrawn),
-                                    number
-                                  )}
-                                >
-                                  &nbsp;{number}&nbsp;
-                                </span>
-                              ))}
+                              {[...player.numbers]
+                                .sort((a, b) => a - b)
+                                .map((number, index) => (
+                                  <span
+                                    key={index}
+                                    className={addClass(
+                                      this.getDrawn(combination, lastDrawn),
+                                      number
+                                    )}
+                                  >
+                                    &nbsp;{number}&nbsp;
+                                  </span>
+                                ))}
                             </td>
                             <td>{config.bet.toFixed(2)}</td>
                           </tr>
@@ -327,35 +336,46 @@ class Game extends Component {
           </div>
           <div className="col-md-2">
             <div className="panel panel-default">
-              <div className="panel-heading">Game status</div>
+              <div className="panel-heading">Status igre</div>
               <div className="panel-body">
                 <div
                   className={
                     this.state.isPlaying ? "animated flipInX" : "hidden"
                   }
                 >
-                  <h1 className="text-center">
-                    # {this.getDrawn(combination, lastDrawn).length}
-                  </h1>
-                  <h2 className="text-center">ODDS</h2>
+                  <h2 className="text-center">KVOTA</h2>
                   <h3 className="text-center animated tada infinite">
                     {this.getDrawn(combination, lastDrawn).length < 6
                       ? ""
-                      : "x " +
-                        config.odds[
-                          this.getDrawn(combination, lastDrawn).length
-                        ]}
+                      : `${
+                          config.odds[
+                            this.getDrawn(combination, lastDrawn).length
+                          ]
+                        }.00`}
                   </h3>
                 </div>
-                <button
-                  disabled={
-                    this.state.isPlaying || this.state.tickets.length === 0
-                  }
-                  onClick={this.startGame}
-                  className="btn btn-success btn-block"
-                >
-                  Star game
-                </button>
+                {this.state.combination.length === 0 ? (
+                  <button
+                    disabled={
+                      this.state.isPlaying || this.state.tickets.length === 0
+                    }
+                    onClick={this.startGame}
+                    className="btn btn-success btn-block"
+                  >
+                    Izvuci brojeve
+                  </button>
+                ) : null}
+                {this.state.combination.length === 35 ? (
+                  <button
+                    disabled={
+                      this.state.isPlaying || this.state.tickets.length === 0
+                    }
+                    onClick={this.resetGame}
+                    className="btn btn-success btn-block"
+                  >
+                    Počni novu igru
+                  </button>
+                ) : null}
               </div>
             </div>
             <ul className="list-group text-center">
@@ -364,16 +384,16 @@ class Game extends Component {
                   <i className="fa fa-trophy fa-2x"></i>
                   <b>
                     <br />
-                    Name:
+                    Ime:
                   </b>
                   {ticket.name} <br />
                 </li>
               ))}
             </ul>
           </div>
-          <div className="col-md-5">
+          <div className="col-md-4">
             <div className="panel panel-default">
-              <div className="panel-heading">Drawing</div>
+              <div className="panel-heading">Brojevi</div>
               <div className="panel-body custom-padding text-center">
                 <ul className="list-inline">
                   {this.getDrawn(combination, lastDrawn).map(

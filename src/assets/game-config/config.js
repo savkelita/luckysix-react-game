@@ -11,7 +11,7 @@
 // ========================
 
 export const config = {
-  gamespeed: 400, // Draw speed
+  gamespeed: 200, // Draw speed
   bet: 100, // Default bet.
   credit: 1000, // Credit.
   numberslength: 6, // Max combinations per hand.
