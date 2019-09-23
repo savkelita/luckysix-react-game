@@ -59,6 +59,15 @@ class Game extends Component {
     }
   };
 
+  removeTicket = id => {
+    const { tickets } = this.state;
+    const newTickets = tickets.filter(x => x.id !== id);
+    return this.setState({
+      ...this.state,
+      tickets: newTickets
+    });
+  };
+
   startGame = () => {
     this.setState({
       ...this.state,
@@ -204,12 +213,10 @@ class Game extends Component {
             <div className="panel panel-default">
               <div className="panel-heading">
                 <a
-                  className="btn btn-primary"
+                  className="glyphicon glyphicon-plus"
                   data-toggle="collapse"
                   href="#collapseExample"
-                >
-                  Dodaj igrača
-                </a>
+                />
               </div>
               <div className="panel-body collapse" id="collapseExample">
                 <div className="row">
@@ -311,7 +318,11 @@ class Game extends Component {
                             key={index}
                           >
                             <td>
-                              {player.name} <br />
+                              <a
+                                className="glyphicon glyphicon-minus"
+                                onClick={() => this.removeTicket(player.id)}
+                              />
+                              {`  ${player.name}`} <br />
                               <span style={{ color: "green" }}>
                                 {player.earnings > 0
                                   ? `+${player.earnings}`
